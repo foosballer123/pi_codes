@@ -204,12 +204,27 @@ include_directories(
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
-add_executable(b_m_control src/b_m_control.cpp)
-target_link_libraries(b_m_control
+add_executable(encstats2 src/encstats2.cpp)
+target_link_libraries(encstats2
    ${catkin_LIBRARIES}#
    ${PIGPIO_LIB}
-   cppgpio
+   rt  
 )
+
+add_executable(cont_move_pi src/cont_move_pi.cpp)
+target_link_libraries(cont_move_pi
+   ${catkin_LIBRARIES}#
+   ${PIGPIO_LIB}
+   rt  
+)
+
+add_executable(motor2_pi src/motor2_pi.cpp)
+target_link_libraries(motor2_pi
+   ${catkin_LIBRARIES}#
+   ${PIGPIO_LIB}
+   rt  
+)
+
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

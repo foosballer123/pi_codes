@@ -6,14 +6,14 @@ import RPi.GPIO as GPIO
 import time
 
 # GPIO setup
-PUL_PIN = 5
-DIR_PIN = 3
+PUL_PIN = 18
+DIR_PIN = 16
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(PUL_PIN, GPIO.OUT)
 GPIO.setup(DIR_PIN, GPIO.OUT)
 
-GPIO.output(DIR_PIN, GPIO.HIGH)
+GPIO.output(DIR_PIN, GPIO.LOW)
 
 def step():
     GPIO.output(PUL_PIN, GPIO.HIGH)
