@@ -2,11 +2,11 @@ import RPi.GPIO as GPIO
 import time
 
 SENSOR_1 = 6  
-SENSOR_2 = 4
-SENSOR_3 = 5  
-SENSOR_4 = 16
-SENSOR_5 = 20
-SENSOR_6 = 6
+SENSOR_2 = 5
+SENSOR_3 = 4  
+SENSOR_4 = 7
+SENSOR_5 = 8
+SENSOR_6 = 2
 
 # Set up GPIO mode and pins
 GPIO.setmode(GPIO.BCM)

@@ -3,12 +3,12 @@
 #include <pigpio.h>
 
 // Define GPIO pins for sensors
-#define SENSOR_1 13
-#define SENSOR_2 21
-#define SENSOR_3 5
-#define SENSOR_4 16
-#define SENSOR_5 20
-#define SENSOR_6 6
+#define SENSOR_1 6
+#define SENSOR_2 5
+#define SENSOR_3 13
+#define SENSOR_4 19
+#define SENSOR_5 26
+#define SENSOR_6 4
 
 // Function to read sensor data
 geometry_msgs::Twist read_sensors() {

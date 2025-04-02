@@ -10,8 +10,8 @@ import numpy as np
 ball_pos = None
 
 # GPIO pins for PUL, DIR, and SENSOR
-PUL_PIN = 26
-DIR_PIN = 19
+PUL_PIN = 24
+DIR_PIN = 23
 
 # Set up GPIO mode and pins
 GPIO.setmode(GPIO.BCM)
@@ -32,36 +32,33 @@ def step():
 
 if __name__ == '__main__':
 	GPIO.output(DIR_PIN, GPIO.LOW) 
-	rospy.init_node('motor2', anonymous = True)
+	rospy.init_node('motor4', anonymous = True)
 	ballpos_sub = rospy.Subscriber("/ball_pos", Twist, pos_callback, queue_size = 10)
-	
+
 	while (sensor != 1):
 		step()
-		sensor = enc_states.enc_status_3()
+		sensor = enc_states.enc_status_6()
 		
 	GPIO.output(DIR_PIN, GPIO.HIGH) 
-
+	
 	for i in range(100):
 		step()
-		
+	
 	#temp = int(ball_pos.linear.z)
 	while not rospy.is_shutdown():
 
-		defense = np.arange(80, 130)
-		in_zone = 0
+		offense = np.arange(486, 520)
+		
+
 		
 		if ball_pos is not None:
 		
-			
 			# read x position from echo
 			position = ball_pos.linear.x
-			
 			sensor = 0
 			
-			if int(position) in defense:
-				 
-				#low is kicking
-				#high is 
+			if ( (int(position) in offense) or ( (380 < position < 486) and (ball_pos.angular.x == 0) ) ):
+			
 				GPIO.output(DIR_PIN, GPIO.LOW) 
 				
 				for i in range(150):
@@ -71,9 +68,11 @@ if __name__ == '__main__':
 				
 				while (sensor != 1):
 					step()
-					sensor = enc_states.enc_status_3()
-				
+					sensor = enc_states.enc_status_6()
+					
 				for i in range(100):
-					step()
+					step()	
+			
+
 
 GPIO.cleanup()

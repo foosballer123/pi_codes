@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
 )
-find_library(PIGPIO_LIB pigpio)
 include_directories(/usr/local/include)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -104,10 +103,10 @@ include_directories(/usr/local/include)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
+##  INCLUDE_DIRS include
   LIBRARIES pi_codes
   CATKIN_DEPENDS roscpp rospy std_msgs
-  DEPENDS system_lib
+##  DEPENDS system_lib
 )
 
 ###########
@@ -204,26 +203,6 @@ include_directories(
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
-add_executable(encstats2 src/encstats2.cpp)
-target_link_libraries(encstats2
-   ${catkin_LIBRARIES}#
-   ${PIGPIO_LIB}
-   rt  
-)
-
-add_executable(cont_move_pi src/cont_move_pi.cpp)
-target_link_libraries(cont_move_pi
-   ${catkin_LIBRARIES}#
-   ${PIGPIO_LIB}
-   rt  
-)
-
-add_executable(motor2_pi src/motor2_pi.cpp)
-target_link_libraries(motor2_pi
-   ${catkin_LIBRARIES}#
-   ${PIGPIO_LIB}
-   rt  
-)
 
 
 ## Add folders to be run by python nosetests
