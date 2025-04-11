@@ -58,30 +58,24 @@ if __name__ == '__main__':
     for i in range(100):
         step()
     
+    offense = np.arange(460, 520)  # Define offense zone range
     while not rospy.is_shutdown():
-        offense = np.arange(486, 520)  # Define offense zone range
-        
         if ball_pos is not None:
             # Read x position from ball position data
             position = ball_pos.linear.x
             sensor = 0  # Reset sensor state
             
             # Check if ball is in offense zone or near the boundary with specific conditions
-            if ((int(position) in offense) or ((380 < position < 486) and (ball_pos.angular.x == 0))):
+            if ((int(position) in offense and (ball_pos.angular.x == 0))):
                 GPIO.output(DIR_PIN, GPIO.LOW)  # Set direction for offensive movement
-                
-                # Move forward
-                for i in range(150):
-                    step()
-                
-                GPIO.output(DIR_PIN, GPIO.HIGH)  # Reverse direction
-                
+
                 # Move back until sensor is triggered
                 while sensor != 1:
                     step()
                     sensor = enc_states.enc_status_6()
                 
                 # Rotate 90 deg slightly to reset position
+                GPIO.output(DIR_PIN, GPIO.HIGH)  # Reverse direction
                 for i in range(100):
                     step()
 

@@ -38,9 +38,9 @@ def step():
     Function to generate a single step pulse for the motor.
     """
     GPIO.output(PUL_PIN, GPIO.HIGH)
-    time.sleep(0.005)  # Small delay for step pulse
+    time.sleep(0.0005)  # Small delay for step pulse
     GPIO.output(PUL_PIN, GPIO.LOW)
-    time.sleep(0.005)  # Small delay for step pulse
+    time.sleep(0.0005)  # Small delay for step pulse
 
 if __name__ == '__main__':
     counter = 0  # Counter to track motor steps
@@ -74,7 +74,7 @@ if __name__ == '__main__':
                 step()  # Perform a step movement
                 THRESHOLD = 1  # Reset threshold
             else:
-                THRESHOLD = 5  # Adjust threshold for filtering
+                THRESHOLD = 10  # Adjust threshold for filtering
             
             # Debugging output
             #print(str(ball_to_player) + "---" + str(ball_pos.linear.z) + "---" + str(counter))

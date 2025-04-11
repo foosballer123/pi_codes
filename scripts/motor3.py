@@ -38,9 +38,9 @@ def step():
     Function to generate a single step pulse for the motor.
     """
     GPIO.output(PUL_PIN, GPIO.HIGH)
-    time.sleep(0.005)  # Smallest delay possible for step pulse
+    time.sleep(0.0005)  # Smallest delay possible for step pulse
     GPIO.output(PUL_PIN, GPIO.LOW)
-    time.sleep(0.005)  # Smallest delay possible for step pulse
+    time.sleep(0.0005)  # Smallest delay possible for step pulse
 
 if __name__ == '__main__':
     counter = 0  # Counter to track motor steps
@@ -74,7 +74,7 @@ if __name__ == '__main__':
                 step()  # Perform a step movement
                 THRESHOLD = 1  # Reset threshold
             else:
-                THRESHOLD = 5  # Adjust threshold for filtering
+                THRESHOLD = 10  # Adjust threshold for filtering
             
             # Reset counter based on encoder status
             if enc_states.enc_status_5() == 1 and temp_sensor5 == 1:
