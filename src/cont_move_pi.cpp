@@ -5,9 +5,9 @@
 #include <iostream>
 #include <chrono>
 
-#define PUL_PIN 24
-#define DIR_PIN 23
-#define STEPS_PER_REV 400
+#define PUL_PIN 21
+#define DIR_PIN 20
+#define STEPS_PER_REV 200
 
 void step() {
     gpioWrite(PUL_PIN, 1);
@@ -33,7 +33,7 @@ void command_callback(const std_msgs::String::ConstPtr& msg) {
         step();
         ROS_INFO("Executed one step");
     } else if (command == "rotate") {
-        gpioWrite(DIR_PIN, 1); // Ensure direction is set before rotating
+        gpioWrite(DIR_PIN, 0); // Ensure direction is set before rotating
         continuous_rotation(100); // Rotate at 100 RPM
         ROS_INFO("Executed continuous rotation");
     } else if (command == "stop") {
@@ -43,10 +43,10 @@ void command_callback(const std_msgs::String::ConstPtr& msg) {
 }
 
 int main(int argc, char** argv) {
-//    if (gpioInitialise() < 0) {
-//        std::cerr << "Failed to initialize GPIO." << std::endl;
-//        return 1;
-//    }
+    if (gpioInitialise() < 0) {
+        std::cerr << "Failed to initialize GPIO." << std::endl;
+        return 1;
+    }
     
     gpioSetMode(PUL_PIN, PI_OUTPUT);
     gpioSetMode(DIR_PIN, PI_OUTPUT);
