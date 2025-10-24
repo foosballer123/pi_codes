@@ -15,7 +15,9 @@ SENSOR_6 = 2
 # Initialize ROS node
 rospy.init_node('sensor_publisher', anonymous=True)
 pub = rospy.Publisher('sensor_data', Twist, queue_size=10)
-rate = rospy.Rate(10)  # Publish at 10 Hz
+rate = rospy.Rate(2000)  # Publish at 10 Hz
+
+t_s = time.time()
 
 def read_sensors():
     # Create a Twist message to hold sensor data
@@ -29,9 +31,16 @@ def read_sensors():
     sensor_data.angular.y = GPIO.input(SENSOR_5)
     sensor_data.angular.z = GPIO.input(SENSOR_6)
     
+
     return sensor_data
 
 def main():
+
+    flag = 0
+    tot = 0
+    count = 0
+    i = 0
+
     # Set up GPIO mode
     GPIO.setmode(GPIO.BCM)
     
@@ -54,6 +63,27 @@ def main():
             # Publish sensor data
             pub.publish(sensor_data)
             
+            # test conditions for encoder dependency
+            # looks for 'blips' in the encoder readings
+            if sensor_data.angular.y == 1 and flag == 0:
+                flag = 1
+                count += 1
+                tot += 1
+                
+            if sensor_data.angular.y == 1 and flag == 1:
+                count += 1
+                tot += 1
+
+            if sensor_data.angular.y == 0 and flag == 1:
+                tot += 1
+
+            if tot != 0:
+                print( count / tot )
+
+            # calculate real loop rate
+            i += 1
+            #print(i/(time.time() - t_s) )
+
             # Sleep to maintain loop rate
             rate.sleep()
     
@@ -62,6 +92,7 @@ def main():
     
     finally:
         # Clean up GPIO before exiting
+        print(i/(time.time() - t_s))
         GPIO.cleanup()
 
 if __name__ == '__main__':

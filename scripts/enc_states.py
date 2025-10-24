@@ -20,6 +20,7 @@ GPIO.setup(SENSOR_4, GPIO.IN)
 GPIO.setup(SENSOR_5, GPIO.IN)
 GPIO.setup(SENSOR_6, GPIO.IN)
 
+
 def enc_status_1():
     try:
         while True:

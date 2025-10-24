@@ -1,0 +1,8 @@
+<launch>
+        
+        <node pkg="pi_codes" type="velocity_ctrl_motor1l.py" name="motor1l" output="screen"/>
+        <node pkg="pi_codes" type="velocity_ctrl_motor2a.py" name="motor2a" output="screen"/>
+        <node pkg="pi_codes" type="velocity_ctrl_motor3l.py" name="motor3l" output="screen"/>
+        <node pkg="pi_codes" type="velocity_ctrl_motor4a.py" name="motor4a" output="screen"/>
+
+</launch>

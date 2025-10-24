@@ -23,7 +23,7 @@ GPIO.setup(DIR_PIN, GPIO.OUT)
 sensor = 0
 temp_sensor4 = 0
 temp_sensor5 = 0
-THRESHOLD = 1  # Movement threshold
+THRESHOLD = 25 # Movement threshold
 
 def pos_callback(data):
     """
@@ -33,14 +33,14 @@ def pos_callback(data):
     global ball_pos
     ball_pos = data
 
-def step():
+def step(dt = 0.0005):
     """
     Function to generate a single step pulse for the motor.
     """
     GPIO.output(PUL_PIN, GPIO.HIGH)
-    time.sleep(0.0005)  # Smallest delay possible for step pulse
+    time.sleep(dt)  # Smallest delay possible for step pulse
     GPIO.output(PUL_PIN, GPIO.LOW)
-    time.sleep(0.0005)  # Smallest delay possible for step pulse
+    time.sleep(dt)  # Smallest delay possible for step pulse
 
 if __name__ == '__main__':
     counter = 0  # Counter to track motor steps
@@ -61,7 +61,8 @@ if __name__ == '__main__':
         if ball_pos is not None:
             # Compute the difference between the ball position and motor position
             ball_to_player = ball_pos.linear.z - counter
-            
+            print(ball_pos.linear.z/(counter + 0.001))
+            #print(550 / abs(ball_to_player) + 0.0001)
             # If the difference is significant, adjust motor position
             if abs(ball_to_player) > THRESHOLD:
                 if ball_to_player > 0:  # Move towards ball
@@ -72,9 +73,9 @@ if __name__ == '__main__':
                     counter -= 1
                 
                 step()  # Perform a step movement
-                THRESHOLD = 1  # Reset threshold
+                THRESHOLD = 25  # Reset threshold
             else:
-                THRESHOLD = 10  # Adjust threshold for filtering
+                THRESHOLD = 25  # Adjust threshold for filtering
             
             # Reset counter based on encoder status
             if enc_states.enc_status_5() == 1 and temp_sensor5 == 1:
