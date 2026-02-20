@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# test code for motor 3 - 10/24/2025
+# 
+# includes an updated step function that takes both a desired number of steps and a desired velocity as input
+# while also checking to make sure that commands exist within the bounds of the table
+
 import rospy
 import RPi.GPIO as GPIO
 from geometry_msgs.msg import Twist
@@ -14,12 +19,12 @@ pos = 0
 pt = 0.00025 # fastest speed (31 rad/s) 
 
 # GPIO pins for motor control
-PUL_PIN = md.motor["THREE"]["PUL"]  # Pulse pin for stepper motor
-DIR_PIN = md.motor["THREE"]["DIR"]  # Direction pin for stepper motor
+PUL_PIN = md.motor[3]["PUL"]  # Pulse pin for stepper motor
+DIR_PIN = md.motor[3]["DIR"]  # Direction pin for stepper motor
 
 # GPIO pins for encoders
-SENSOR_R = md.motor["THREE"]["SENSOR R"]
-SENSOR_L = md.motor["THREE"]["SENSOR L"]
+SENSOR_R = md.motor[3]["SENSOR R"]
+SENSOR_L = md.motor[3]["SENSOR L"]
 
 # Set up GPIO mode and configure pins
 GPIO.setmode(GPIO.BCM)
@@ -151,7 +156,3 @@ if __name__ == '__main__':
         
 # Clean up GPIO settings
 GPIO.cleanup()
-
-
-
-

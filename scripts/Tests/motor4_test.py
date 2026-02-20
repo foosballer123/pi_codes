@@ -29,11 +29,11 @@ def step(omega_d):
     time.sleep(pt)
     GPIO.output(PUL_PIN, GPIO.LOW)
     time.sleep(pt)
-
+    
 try:
     t_s = time.time()
-    for _ in range(10):  # One full revolution is 400 steps
-        step(0.5)
+    for _ in range(400):  # One full revolution is 400 steps
+        step(31)
     t_f = time.time()
 
 finally:

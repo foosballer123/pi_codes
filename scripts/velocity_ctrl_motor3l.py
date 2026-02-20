@@ -5,12 +5,14 @@ import RPi.GPIO as GPIO
 from geometry_msgs.msg import Twist
 import time
 import numpy as np
+from std_msgs.msg import Float32
 
 # Global variable to store ball position
 omega_d = None
 bound = 0.3
 
-pt = 0.00025 # fastest speed (31 rad/s)
+#pt = 0.00025 # fastest speed (31 rad/s)
+pt = 0.001 
 up = True # ignore this for now
 # GPIO pins for motor control
 PUL_PIN = 21  # Pulse pin for stepper motor
@@ -50,8 +52,9 @@ def pos_callback(data):
         pw = float(tick_val/-omega_d.linear.x)
         pt = pw/2
         
-
-    #print('Got this pt value:',pt)   
+    if abs(omega_d.linear.x) < 0.5:
+        print('Got this pt value:',pt)
+        print('From omega', omega_d.linear.x) 
 
 def step():
     """
@@ -64,46 +67,101 @@ def step():
     GPIO.output(PUL_PIN, GPIO.LOW)
     time.sleep(pt)  # Smallest delay possible for step pulse
 
+# HIGH = step towards hardware
+# LOW = step away from hardware
+# pos = 525 closest to hardware 
 if __name__ == '__main__':
 
-    GPIO.output(DIR_PIN, GPIO.LOW)  # Set initial motor direction
     rospy.init_node('motor3', anonymous=True)
-    rate = rospy.Rate(2000) # loop rate
 
-    # Subscribe to the ball position topic
+     # Subscribe to the ball position topic
     ballpos_sub = rospy.Subscriber("/omega_d", Twist, pos_callback, queue_size=10)
+    pub = rospy.Publisher("/motor3_pos", Float32, queue_size=10)
+    right_pub = rospy.Publisher("/right", Float32, queue_size=10)
+    left_pub = rospy.Publisher("/left", Float32, queue_size=10)
+    #rate = rospy.Rate(2000) # loop rate
     
+    GPIO.output(DIR_PIN, GPIO.HIGH)  # Set initial motor direction (towards hardware)
+    sensor_flag = 0
+
+    while sensor_flag != 1:  
+
+        print("Callibrating...")
+        right = GPIO.input(SENSOR_4)
+        if (right == 1) and (sensor_flag == 0):
+            sensor_flag = 1
+            print("Finished callibration.")
+            break
+        step()
+
+    pos = 525
+    print("Position reset and published:", pos)
+    pub.publish(pos)
+
+    GPIO.output(DIR_PIN, GPIO.LOW)
+    for i in range(200):
+        step()
+        pos += -1
+
+    print("Stepped 200 and published:", pos)
+
+    # # TESTING LOOP
+    # while True:
+    #     pub.publish(pos)
+
     time.sleep(2) 
 
     while not rospy.is_shutdown():
 
         right = GPIO.input(SENSOR_4)
         left = GPIO.input(SENSOR_5)
+        right_pub.publish(right)
+        left_pub.publish(left)
 
-        if not (right or left):
-            
-            if omega_d.linear.x > bound:
-                GPIO.output(DIR_PIN, GPIO.HIGH)
-                step()
-            
-            if omega_d.linear.x < -bound:
-                GPIO.output(DIR_PIN, GPIO.LOW)
-                step()
+        if omega_d != None:
+            if not (right or left):
+                
+                if (omega_d.linear.x > bound) and (pos != 0):
+                    GPIO.output(DIR_PIN, GPIO.HIGH)
+                    dir = 1
+                    step()
+                    pos += dir
+                    pub.publish(pos)
+                    print(pos)
 
-        if right and not left:
-            
-            if omega_d.linear.x < -bound:
-                GPIO.output(DIR_PIN, GPIO.LOW)
-                step()
+                elif (omega_d.linear.x < -bound) and (pos != 525):
+                    GPIO.output(DIR_PIN, GPIO.LOW)
+                    dir = -1
+                    step()
+                    pos += dir
+                    pub.publish(pos)
+                    print(pos)
 
-        if left and not right:
-            
-            if omega_d.linear.x > bound:
-                GPIO.output(DIR_PIN, GPIO.HIGH)
-                step()
-            
-            
-        rate.sleep()
+            elif right and not left:
+                print("Ok buddy")
+                pos = 525
+                if omega_d.linear.x < -bound:
+                    GPIO.output(DIR_PIN, GPIO.LOW)
+                    dir = -1
+                    step()
+                    pos += dir
+                    pub.publish(pos)
+                    print(pos)
+
+            elif left and not right:
+                pos = 0
+                if omega_d.linear.x > bound:
+                    GPIO.output(DIR_PIN, GPIO.HIGH)
+                    dir = 1
+                    step()
+                    pos += dir
+                    pub.publish(pos)
+                    print(pos)
+            else:
+                pub.publish(pos)
+                print(pos)
+
+        #rate.sleep()
         
 
 # Clean up GPIO settings

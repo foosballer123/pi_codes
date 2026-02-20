@@ -26,85 +26,205 @@ import RPi.GPIO as GPIO
 from geometry_msgs.msg import Twist
 import enc_states 
 import time
+from std_msgs.msg import Float32
 import numpy as np
+import math
 
 # Global variable to store ball position
-omega_d = None
-bound = 0.3
+omega_d = 0.0
+cmd_recieved = False
 
-pt = 0.00025 # fastest speed (31 rad/s)
+#pt = 0.00025 # fastest speed (31 rad/s)
+pt = 0.001 # initial pt
 up = True # ignore this for now
+i = 0 # direction vector
+pos = 0
+n = 0
+k = 0
+
 # GPIO pins for motor control
 PUL_PIN = 26  # Pulse pin for stepper motor
 DIR_PIN = 19  # Direction pin for stepper motor
+
+# GPIO pins for encoders
+SENSOR = 4
 
 # Set up GPIO mode and configure pins
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PUL_PIN, GPIO.OUT)
 GPIO.setup(DIR_PIN, GPIO.OUT)
 
+# GPIO for encoder states
+GPIO.setup(SENSOR, GPIO.IN)
+
+# Sensor variable
+sensor = GPIO.input(SENSOR) 
+
 # TO-DO: Define global command receieved flag as false
-def pos_callback(data):
+def cmd_callback(data):
     """
-    Callback function for receiving ball position data.
-    Updates the global variable ball_pos.
+    Callback function for receiving velocity commands.
+    Updates the global variable oemga_d.
     """
     global omega_d
     global pt
-    omega_d = data
-    tick_val = 0.015708 # in radians 2pi/400
+    global cmd_recieved
+    global i
+    global n
+    global k
 
-    if abs(omega_d.linear.x) > bound:
-        pw = float(tick_val/abs(omega_d.linear.x)) # omega = delta_theta / delta_t
-        pt = pw/2
-        #pt = 1.0
-        # update the global flag to true
-    print('Got this pt value:', pt)   
-    print('From omega', omega_d.linear.x)
+    if cmd_recieved == False:
+        cmd_recieved = True  
+    omega_d = data.linear.y
+    k += 1
+
+    print("\n",n,"In callback")
+    print(n, "Got omega", omega_d)
+
+    # tick_val = 0.015708 # in radians 2pi/400
+    # timing_constant = 0.000178 # seconds (10^-6 is microseconds)
+
+    # if (omega_d != 0.0) and (float(tick_val/abs(omega_d)) > timing_constant):
+        
+    #     pw = float(tick_val/abs(omega_d)) - timing_constant # omega = delta_theta / delta_t 
+    #     pt = pw/2
+
+    #     if omega    # tick_val = 0.015708 # in radians 2pi/400
+    # timing_constant = 0.000178 # seconds (10^-6 is microseconds)
+
+    # if (omega_d != 0.0) and (float(tick_val/abs(omega_d)) > timing_constant):
+        
+    #     pw = float(tick_val/abs(omega_d)) - timing_constant # omega = delta_theta / delta_t 
+    #     pt = pw/2
+
+    #     if omega_d > 0.0:
+    #         GPIO.output(DIR_PIN, GPIO.LOW)
+    #         i = 1
+    #     elif omega_d < 0.0:
+    #         GPIO.output(DIR_PIN, GPIO.HIGH)
+    #         i = -1
+
+    # else:
+    #     cmd_recieved = False_d > 0.0:
+    #         GPIO.output(DIR_PIN, GPIO.LOW)
+    #         i = 1
+    #     elif omega_d < 0.0:
+    #         GPIO.output(DIR_PIN, GPIO.HIGH)
+    #         i = -1
+
+    # else:
+    #     cmd_recieved = False
+
+
 
 def step():
     """
     Function to generate a single step pulse for the motor.
     """
     global pt
-    #print(pt,'inside the step')
-    GPIO.output(PUL_PIN, GPIO.HIGH)
-    time.sleep(pt)  # Smallest delay possible for step pulse
-    GPIO.output(PUL_PIN, GPIO.LOW)
-    time.sleep(pt)  # Smallest delay possible for step pulse
+    global pos
+    global i
+    global n
+    global omega_d
+
+    tick_val = 0.015708 # in radians 2pi/400
+    timing_constant = 0.000178 # seconds (10^-6 is microseconds)
+
+    if (omega_d != 0.0) and (float(tick_val/abs(omega_d)) > timing_constant):
+        
+        pw = float(tick_val/abs(omega_d)) - timing_constant # omega = delta_theta / delta_t 
+        pt = pw/2
+
+        if omega_d > 0.0:
+            GPIO.output(DIR_PIN, GPIO.LOW)
+            i = 1
+        elif omega_d < 0.0:
+            GPIO.output(DIR_PIN, GPIO.HIGH)
+            i = -1
+
+    if pt < 1:
+        
+        print("\n", n, "In step")
+        print(n, "Got pt", pt)
+        print(n, "Got i", i)
+
+        GPIO.output(PUL_PIN, GPIO.HIGH)
+        time.sleep(pt)  
+        GPIO.output(PUL_PIN, GPIO.LOW)
+        time.sleep(pt)
+   
+        pos += i
+        print(n, "Pos", pos)
 
 if __name__ == '__main__':
    
-    i = 0
-    
+    sensor_flag = 0
+    n = 0
+
     GPIO.output(DIR_PIN, GPIO.LOW)  # Set initial motor direction
     rospy.init_node('motor2', anonymous=True)
-    rate = rospy.Rate(2000) # 2000 hz loop rate 
+    #rate = rospy.Rate(3000) # hz loop rate 
 
-    # Subscribe to the ball position topic
-    ballpos_sub = rospy.Subscriber("/omega_d", Twist, pos_callback, queue_size=10)
+    # Subscribe to the velocity command topic
+    cmd_sub = rospy.Subscriber("/omega_d", Twist, cmd_callback, queue_size=10)
+    #or_pub = rospy.Publisher("/omega_real_2", Float32, queue_size=10)
+    pos_pub = rospy.Publisher("/motor2_rad", Float32, queue_size=10)
 
-    # sleep to wait for omega_d to update (TO-DO: replace this with a 'command recieved' flag)
-    time.sleep(1)
+    print(n, "Initializing...")
+    # initializing player position 
+    # WARNING: Encoder for motor 2a is malfunctioning!! 
+    sensor = GPIO.input(SENSOR)     
+    while sensor != 1:
+        step()
+        sensor = GPIO.input(SENSOR) 
+    print(n, "Initialized")
 
-    t_s = time.time()
+    #GPIO.output(DIR_PIN, GPIO.LOW)
+    #i = 1
+    #for k in range(200):
+    #    step()
+
+    #t_s = time.time()
+    #time_trigger = t_s
     while not rospy.is_shutdown():
-        
-        # TO-DO: if 'command recieved' is true
-        if omega_d.linear.x > bound:
-            GPIO.output(DIR_PIN, GPIO.HIGH)
-            step()
+
+        sensor = GPIO.input(SENSOR) 
+
+        # counts a complete rotation on encoder HIGH            
+        #print("Real omega:", omega_real )
+        #or_pub.publish(omega_real)
+        #time_trigger = t_n
+        if (sensor == 1) and (sensor_flag == 0):
+            print(n, "Sensor triggered!!!")
+            sensor_flag = 1
+            pos = 0
+
+            #t_n = time.time()
+            #omega_real = (2*math.pi) / (t_n - time_trigger)
+            #print("Real omega:", omega_real )
+            #or_pub.publish(omega_real)
+            #time_trigger = t_n
             
-        if omega_d.linear.x < -bound:
-            GPIO.output(DIR_PIN, GPIO.LOW)
-            step()
-       
-        i += 1
-        rate.sleep()
+        elif (sensor == 0) and (sensor_flag == 1):
+            sensor_flag = 0
+
+        if cmd_recieved:
+            step()    
+
+            #print("Real omega:", omega_real )
+            #or_pub.publish(omega_real)
+            #time_trigger = t_n
+            #print(pos)
+        
+        n += 1
+        rad = pos*((2*math.pi)/400)
+        print(n,"Rad",rad)
+        pos_pub.publish(rad) #(math.cos(rad)) 
+        #rate.sleep()
             
  
 # Clean up GPIO settings and displaying loop rate
-print("Real HZ =", i/(time.time()-t_s) )
+#print("Real HZ =", i/(time.time()-t_s) )
 GPIO.cleanup()
 
 

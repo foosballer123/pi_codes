@@ -36,7 +36,7 @@ def step():
     Function to generate a single step pulse for the motor.
     """
     GPIO.output(PUL_PIN, GPIO.HIGH)
-    time.sleep(0.00025)  # Smallest delay possible for step pulse
+    time.sleep(0.00025)  #0.00025 Smallest delay possible for step pulse
     GPIO.output(PUL_PIN, GPIO.LOW)
     time.sleep(0.00025)  # Smallest delay possible for step pulse
 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     GPIO.output(DIR_PIN, GPIO.HIGH)  # Change motor direction
     
     # Perform initial stepping motion
-    for i in range(100):
+    for i in range(30):
         step()
 
     defense = np.arange(80, 130)  # Define defense zone range
@@ -68,15 +68,19 @@ if __name__ == '__main__':
             # Check if ball is within the defense zone
             if int(position) in defense:
                 GPIO.output(DIR_PIN, GPIO.LOW)  # Set direction for defensive movement
-
+                
+                for i in range(80):
+                    step()
+                
                 # Move back until sensor is triggered
+                GPIO.output(DIR_PIN, GPIO.HIGH)  # Reverse direction
                 while sensor != 1:
                     step()
                     sensor = enc_states.enc_status_3()
-                
+                time.sleep(0.1)
                 # Rotate 90 deg to reset position
-                GPIO.output(DIR_PIN, GPIO.HIGH)  # Reverse direction
-                for i in range(100):
+                #GPIO.output(DIR_PIN, GPIO.HIGH)  # Reverse direction
+                for i in range(35):
                     step()
 
 # Clean up GPIO settings

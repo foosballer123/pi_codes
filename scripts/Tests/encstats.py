@@ -14,7 +14,7 @@ SENSOR_6 = 2
 
 # Initialize ROS node
 rospy.init_node('sensor_publisher', anonymous=True)
-pub = rospy.Publisher('sensor_data', Twist, queue_size=10)
+pub = rospy.Publisher('/sensor_data', Twist, queue_size=10)
 rate = rospy.Rate(2000)  # Publish at 10 Hz
 
 t_s = time.time()
