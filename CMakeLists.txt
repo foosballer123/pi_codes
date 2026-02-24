@@ -120,7 +120,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${PIGPIO_INCLUDE_DIR}
 )
-
+#add_subdirectory(~/catkin_ws/src/matplotplusplus)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -152,6 +152,36 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+add_executable(velocity_ctrl_motor4a_step src/velocity_ctrl_motor4a_step.cpp)
+target_link_libraries(velocity_ctrl_motor4a_step
+    ${catkin_LIBRARIES}
+    wiringPi
+    rt
+)
+add_executable(velocity_ctrl_motor2a_step src/velocity_ctrl_motor2a_step.cpp)
+target_link_libraries(velocity_ctrl_motor2a_step
+    ${catkin_LIBRARIES}
+    wiringPi
+    rt
+)
+add_executable(motor2_test src/motor2_test.cpp)
+target_link_libraries(motor2_test
+    ${catkin_LIBRARIES}
+    wiringPi
+    rt
+)
+add_executable(motor4_test src/motor4_test.cpp)
+target_link_libraries(motor4_test
+    ${catkin_LIBRARIES}
+    wiringPi
+    rt
+)
+add_executable(omega_plot src/omega_plot.cpp)
+target_link_libraries(omega_plot
+    ${catkin_LIBRARIES}
+    wiringPi
+    rt
+)
 #############
 ## Install ##
 #############
@@ -207,4 +237,3 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-

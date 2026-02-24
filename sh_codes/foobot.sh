@@ -9,5 +9,5 @@ source /opt/ros/noetic/setup.bash
 source /home/FooBot/catkin_ws/devel/setup.bash
 
 echo "Starting Launch File..."
-#roslaunch pi_codes foobot.launch
-rosrun pi_codes cont_move_pi.py
+roslaunch pi_codes foobot.launch
+#rosrun pi_codes cont_move_pi.py

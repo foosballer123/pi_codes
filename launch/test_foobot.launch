@@ -1,0 +1,7 @@
+<launch>
+        <node pkg="pi_codes" type="motor1.py" name="motor1_test" output="screen"/>
+        <node pkg="pi_codes" type="motor2_test.py" name="motor2_test" output="screen"/>
+        <node pkg="pi_codes" type="motor3.py" name="motor3_test" output="screen"/>
+        <node pkg="pi_codes" type="motor4.py" name="motor4_test" output="screen"/>
+
+</launch>
