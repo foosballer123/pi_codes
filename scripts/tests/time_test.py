@@ -1,5 +1,7 @@
 import time
 
+# testing how accurate pythons time module is
+
 t_s = time.time()
 j = 0
 #for i in range(1):
