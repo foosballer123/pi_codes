@@ -152,7 +152,7 @@ if __name__ == '__main__':
                     step()
                     t_s = time.time() - t_n
 
-        pos_pub.publish(round(pos * (120/525), 0))
+        pos_pub.publish(round(pos * (120/525), 0)) # replace pix / step with meters / step
         left_enc_pub.publish(left)
         right_enc_pub.publish(right)
         print("Published:", pos)

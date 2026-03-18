@@ -155,10 +155,10 @@ if __name__ == '__main__':
                     dir = 1
                     step()
                     pos += dir
-                    pub.publish(pos)
+                    pub.publish(pos) # replace pix / step with meters / step
                     print(pos)
             else:
-                pub.publish(pos)
+                pub.publish(pos) # replace pix / step with meters / step
                 print(pos)
 
         #rate.sleep()
