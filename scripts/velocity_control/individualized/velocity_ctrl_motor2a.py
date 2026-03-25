@@ -5,7 +5,7 @@
 
 # The loop rate here is important: 
 # A low loop rate is a bottleneck for actuation
-# A high loop rate can lead to missed encoder readings
+# A high loopd rate can lead to missed encoder readings
 # A good loop rate should account for the sampling rate of the encoder as well as the maximum velocity of the motor
 
 # It is also worth noting that the "sent velocity command" does not equate to what actually actuates
@@ -217,8 +217,8 @@ if __name__ == '__main__':
             #print(pos)
         
         n += 1
-        rad = pos*((2*math.pi)/400)
-        print(n,"Rad",rad)
+        rad = pos*((2*math.pi)/400) 
+        print(n,"Rad",rad) 
         pos_pub.publish(rad) #(math.cos(rad)) 
         #rate.sleep()
             

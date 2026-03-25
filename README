@@ -1,0 +1,11 @@
+Create a README file that includes all instructions to run and necissary information about the file structure and codes
+
+How the sh codes are intended to run
+How launch files work
+Which files work with the 'old' and 'new' foobots
+
+Do the C++ codes offer any obvious benefits over the Python codes?
+What ros commands would someone need to be aware of to run python scripts or C codes from terminal? 
+How would someone build their own ros files if necissary?
+
+Also, go back through all of the codes and test which ones still work and add comments to the ones that do.

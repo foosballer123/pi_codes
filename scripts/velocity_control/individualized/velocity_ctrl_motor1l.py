@@ -17,9 +17,11 @@ init = False
 #pt = 0.00025 # fastest speed (31 rad/s)
 pt = 0.001 # initial speed
 up = True # ignore this for now
+
 # GPIO pins for motor control
 PUL_PIN = 27  # Pulse pin for stepper motor
 DIR_PIN = 17  # Direction pin for stepper motor
+
 # GPIO pins for encoders 1 and 2
 SENSOR_1 = 6
 SENSOR_2 = 5
@@ -73,6 +75,7 @@ def pos_callback(data):
 
     #print('Got this pt value:',pt)   
 
+# step and return pos
 def step():
     """
     Function to generate a single step pulse for the motor.
@@ -91,7 +94,7 @@ def step():
         time.sleep(pt)  # Smallest delay possible for step pulse
 
         pos += i
-        
+
 # HIGH = step towards hardware
 # LOW = step away from hardware
 # pos = 525 closest to hardware     
@@ -99,7 +102,6 @@ if __name__ == '__main__':
 
     GPIO.output(DIR_PIN, GPIO.LOW)  # Set initial motor direction
     rospy.init_node('motor1', anonymous=True)
-    #rate = rospy.Rate(2000) # loop rate
 
     # Subscribe to the ball position topic
     ballpos_sub = rospy.Subscriber("/omega_d", Twist, pos_callback, queue_size=10)

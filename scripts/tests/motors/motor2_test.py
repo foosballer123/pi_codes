@@ -4,7 +4,7 @@ import rospy
 import RPi.GPIO as GPIO
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
-import enc_states_test 
+import scripts.tests.encoders.enc_states_test as enc_states_test 
 import time
 import numpy as np
 

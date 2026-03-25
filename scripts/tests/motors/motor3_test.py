@@ -9,7 +9,7 @@ import rospy
 import RPi.GPIO as GPIO
 from geometry_msgs.msg import Twist
 import time
-import motor_dict as md
+import scripts.dicts.motor_dict as md
 
 # Global variables to store users command and position readings from encoder
 user_cmd = None

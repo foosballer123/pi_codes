@@ -3,7 +3,7 @@
 import rospy
 import RPi.GPIO as GPIO
 import time
-import motor_dict as md
+import scripts.dicts.motor_dict as md
 import math
 
 # Set up GPIO mode and configure pins
