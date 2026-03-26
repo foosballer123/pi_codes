@@ -113,51 +113,28 @@ if __name__ == '__main__':
 
     # Start control loop!
     while not rospy.is_shutdown():
-
-        if (motor % 2) == 1:
-
-            # reading encoder values
-            right_encoder = GPIO.input(SENSOR_R) # 525 steps
-            left_encoder = GPIO.input(SENSOR_L) # 0 steps
-   
-            if cmd_recieved:
-                
-                # Checking encoder values before sending step commands to the motors to prevent wall collisions
-                if not (right_encoder or left_encoder):
-                    pos = tools.step(PUL_PIN, pt, pos, i) # stepping and updating position
-                    
-                elif right_encoder and not left_encoder:
-                    pos = 525
-                    if i == -1:
-                        pos = tools.step(PUL_PIN, pt, pos, i) # stepping and updating position
-                        
-                elif left_encoder and not right_encoder:
-                    pos = 0
-                    if i == 1:
-                        pos = tools.step(PUL_PIN, pt, pos, i) # stepping and updating position
-
-            meters = round(pos * ((0.340/3)/525), 7)
-            pos_pub.publish(meters) # replace pix / step with meters / step
-            left_enc_pub.publish(left_encoder)
-            right_enc_pub.publish(right_encoder)
         
-        if (motor % 2) == 0:
+        # Updating variables with each iteration of the control loop with tools.control()
+        #   measurements: rad, meters, pos 
+        #   encoder values: left_encoder, encoder, right_encoder, encoder_flag
+        #   motor type: linear, angular
 
-            # reading encoder value
-            encoder = GPIO.input(SENSOR) 
+        rad, meters, pos,  \
+        left_encoder, encoder, right_encoder, encoder_flag, \
+        angular, linear \
+        = tools.control(
+            motor, # motor id
+            pos, i, pt, # step parameters
+            SENSOR_R, SENSOR_L, SENSOR, encoder_flag, # encoder parameters
+            cmd_recieved, PUL_PIN # actuation parameters
+        )
 
-            if (encoder == 1) and (encoder_flag == 0):
-                encoder_flag = 1
-                pos = 0
-            elif (encoder == 0) and (encoder_flag == 1):
-                encoder_flag = 0
+        # publishing measurements based on motor type
+        if linear: 
+            pos_pub.publish(meters); left_enc_pub.publish(left_encoder); right_enc_pub.publish(right_encoder)
+        if angular: 
+            pos_pub.publish(rad); enc_pub.publish(encoder)
 
-            if cmd_recieved:
-                pos = tools.step(PUL_PIN, pt, pos, i) # stepping and updating position
-            
-            rad = pos*((2*math.pi)/400) 
-            pos_pub.publish(rad)
-            enc_pub.publish(encoder)
 
 print('Shutting down motor '+str(motor)+'.')
 

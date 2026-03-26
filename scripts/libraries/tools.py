@@ -1,5 +1,6 @@
 import time
 import RPi.GPIO as GPIO
+import math
 
 def step(pin, pt, pos, i):
 
@@ -19,6 +20,10 @@ def step(pin, pt, pos, i):
     return pos
 
 def get_step(init, i, omega_d, pin):
+
+    """
+    Function calculates step variables based on direction and omega_d.
+    """
 
     pt = 0
     cmd_recieved = True
@@ -47,6 +52,13 @@ def get_step(init, i, omega_d, pin):
 
 # Odd motors are linear and even motors are angular [2n = angular and (2n-1) = linear]
 def get_pins(motor):
+
+    """
+    Function takes a motor # and returns the associated PUL, DIR, and ENC pins.
+    To add a new motor follow the convention that the two motors along a rod are in sequence (i.e. rod 1 = motors 1 and 2, rod 2 = motors 3 and 4) 
+    and that the linear motors are odd (motors 1 and 3) and the angular motors are even (motors 2 and 4).
+    Note: The right encoders are closest to the hardware and the left encoders are closest to the human player.
+    """
 
     if motor == 1:
 
@@ -88,15 +100,104 @@ def get_pins(motor):
 
 def setup_pins(motor, pul_pin, dir_pin, pin1, pin2, pin3):
 
-    # Set up GPIO mode and configure pins
+    """
+    Function sets up pins from arguments using the GPIO library.
+    """
+
+    # Set up GPIO for motor pins
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(pul_pin, GPIO.OUT)
     GPIO.setup(dir_pin, GPIO.OUT)
 
-    # Set up GPIO for encoder states and read initial values
+    # Set up GPIO for encoder states values
     if motor == 1 or motor == 3:
         GPIO.setup(pin1, GPIO.IN)
         GPIO.setup(pin2, GPIO.IN)
-
     elif motor == 2 or motor == 4:
         GPIO.setup(pin3, GPIO.IN)
+
+def if_linear_step(motor, pos, i, pt, right_encoder_pin, left_encoder_pin, cmd_recieved, pul_pin):
+    
+    # Checking if motor is linear (odd numbers are linear)
+    if (motor % 2) == 1:
+
+        linear = True
+
+        # reading encoder values
+        right_encoder = GPIO.input(right_encoder_pin) # 525 steps
+        left_encoder = GPIO.input(left_encoder_pin) # 0 steps
+
+        if cmd_recieved:
+            
+            # Checking encoder values before sending step commands to the motors to prevent wall collisions
+            if not (right_encoder or left_encoder):
+                pos = step(pul_pin, pt, pos, i) # stepping and updating position
+                
+            elif right_encoder and not left_encoder:
+                pos = 525
+                if i == -1:
+                    pos = step(pul_pin, pt, pos, i) # stepping and updating position
+                    
+            elif left_encoder and not right_encoder:
+                pos = 0
+                if i == 1:
+                    pos = step(pul_pin, pt, pos, i) # stepping and updating position
+
+        meters = round(pos * ((0.340/3)/525), 7)
+    else:
+        linear = False; meters = None; right_encoder = None; left_encoder = None
+
+    return meters, pos, right_encoder, left_encoder, linear
+
+def if_angular_step(motor, pos, i, pt, encoder_pin, encoder_flag, cmd_recieved, pul_pin):
+
+    # Checking if motor is angular (even numbers are angular)
+    if (motor % 2) == 0:
+
+        angular = True
+
+        # reading encoder value
+        encoder = GPIO.input(encoder_pin) 
+
+        if (encoder == 1) and (encoder_flag == 0):
+            encoder_flag = 1
+            pos = 0
+        elif (encoder == 0) and (encoder_flag == 1):
+            encoder_flag = 0
+
+        if cmd_recieved:
+            pos = step(pul_pin, pt, pos, i) # stepping and updating position
+        
+        rad = pos*((2*math.pi)/400) 
+    else:
+        angular = False; rad = None; encoder = None
+
+    print(rad, pos)
+    return rad, pos, encoder, encoder_flag, angular
+
+def control(motor, pos, i, pt, right_encoder_pin, left_encoder_pin, encoder_pin, encoder_flag, cmd_recieved, pul_pin):
+
+    meters, pos, \
+    right_encoder, left_encoder, \
+    linear \
+    = if_linear_step(
+        motor, 
+        pos, i, pt, 
+        right_encoder_pin, left_encoder_pin, 
+        cmd_recieved, pul_pin
+    )
+    rad, pos, \
+    encoder, encoder_flag, \
+    angular \
+    = if_angular_step(
+        motor, 
+        pos, i, pt, 
+        encoder_pin, encoder_flag, 
+        cmd_recieved, pul_pin
+    )
+
+    return rad, meters, pos, \
+    left_encoder, encoder, right_encoder, encoder_flag, \
+    angular, linear
+
+

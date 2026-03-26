@@ -23,22 +23,23 @@ rod = args.rod
 
 processes = []
 
+# Start motor nodes
 def start_nodes():
     global processes
     
-    # Start node 1
+    # Start linear motor (2n-1) node
     p1 = subprocess.Popen([
         "rosrun", "pi_codes", "velocity_ctrl.py", "--motor="+str((rod*2)-1)
     ])
     
-    # Start node 2
+    # Start angular motor (2n) node
     p2 = subprocess.Popen([
         "rosrun", "pi_codes", "velocity_ctrl.py", "--motor="+str(rod*2)
     ])
     
     processes.extend([p1, p2])
 
-
+# Cleanly shutdown motor nodes
 def shutdown_nodes(signum=None, frame=None):
     print("\nShutting down nodes...")
     
