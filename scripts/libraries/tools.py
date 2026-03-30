@@ -143,11 +143,10 @@ def if_linear_step(motor, pos, i, pt, right_encoder_pin, left_encoder_pin, cmd_r
                 if i == 1:
                     pos = step(pul_pin, pt, pos, i) # stepping and updating position
 
-        meters = round(pos * ((0.340/3)/525), 7)
     else:
-        linear = False; meters = None; right_encoder = None; left_encoder = None
+        linear = False; right_encoder = None; left_encoder = None
 
-    return meters, pos, right_encoder, left_encoder, linear
+    return pos, right_encoder, left_encoder, linear
 
 def if_angular_step(motor, pos, i, pt, encoder_pin, encoder_flag, cmd_recieved, pul_pin):
 
@@ -168,16 +167,14 @@ def if_angular_step(motor, pos, i, pt, encoder_pin, encoder_flag, cmd_recieved, 
         if cmd_recieved:
             pos = step(pul_pin, pt, pos, i) # stepping and updating position
         
-        rad = pos*((2*math.pi)/400) 
     else:
-        angular = False; rad = None; encoder = None
+        angular = False; encoder = None
 
-    print(rad, pos)
-    return rad, pos, encoder, encoder_flag, angular
+    return pos, encoder, encoder_flag, angular
 
 def control(motor, pos, i, pt, right_encoder_pin, left_encoder_pin, encoder_pin, encoder_flag, cmd_recieved, pul_pin):
 
-    meters, pos, \
+    pos, \
     right_encoder, left_encoder, \
     linear \
     = if_linear_step(
@@ -186,7 +183,7 @@ def control(motor, pos, i, pt, right_encoder_pin, left_encoder_pin, encoder_pin,
         right_encoder_pin, left_encoder_pin, 
         cmd_recieved, pul_pin
     )
-    rad, pos, \
+    pos, \
     encoder, encoder_flag, \
     angular \
     = if_angular_step(
@@ -196,8 +193,22 @@ def control(motor, pos, i, pt, right_encoder_pin, left_encoder_pin, encoder_pin,
         cmd_recieved, pul_pin
     )
 
-    return rad, meters, pos, \
+    return pos, \
     left_encoder, encoder, right_encoder, encoder_flag, \
     angular, linear
 
+def calculate(motor, pos, steps_across_field, steps_per_revolution, distance_between_players, player_distance_from_wall, distance_to_clear_zone):
 
+    rad, meters = 0, [0.0, 0.0, 0.0]
+    
+    if (motor % 2) == 0: # angular position
+        rad = pos*((2*math.pi)/steps_per_revolution)
+
+    elif (motor % 2) == 1: # linear positions
+        base_player_position = round(pos * (distance_to_clear_zone / steps_across_field), 7)
+        meters = [player_distance_from_wall + base_player_position, 
+                  player_distance_from_wall + base_player_position + distance_between_players, 
+                  player_distance_from_wall + base_player_position + 2*distance_between_players]
+
+    #print(rad, meters)
+    return rad, meters

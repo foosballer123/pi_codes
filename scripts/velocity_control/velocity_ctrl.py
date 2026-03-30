@@ -5,6 +5,7 @@ import RPi.GPIO as GPIO
 from geometry_msgs.msg import Twist
 import time
 from std_msgs.msg import Float32
+from std_msgs.msg import Float64MultiArray
 import math
 from libraries import tools # import libraries for step and direction/pw calculations
 import argparse
@@ -24,6 +25,10 @@ init = False # initialization flag
 i = 1 # initial direction
 pos = 0 # initial position
 pt = 0.001 # initial speed
+
+# initial measurements
+rad, meters = 0, 0
+player_positions = Float64MultiArray()
 
 # Get and set pins for motors and encoders
 PUL_PIN, DIR_PIN, SENSOR_L, SENSOR_R, SENSOR = tools.get_pins(motor)
@@ -76,7 +81,15 @@ if __name__ == '__main__':
 
     # Subscribe to the command topic and create a position publisher
     ballpos_sub = rospy.Subscriber("/omega_d", Twist, pos_callback, queue_size=10)
-    pos_pub = rospy.Publisher("/motor"+str(motor)+"_pos", Float32, queue_size=10)
+    player_position_pub = rospy.Publisher("/rod"+str(motor)+"_player_positions", Float64MultiArray, queue_size=10)
+
+    # Get system parameters from ros config on master
+    field_height = rospy.get_param('/table_measurements/field_height')
+    steps_across_field = rospy.get_param('/table_measurements/steps_across_field')
+    steps_per_revolution = rospy.get_param('/table_measurements/steps_per_revolution')
+    distance_between_players = rospy.get_param('/table_measurements/distance_between_players')
+    player_distance_from_wall = rospy.get_param('/table_measurements/player_distance_from_wall')
+    distance_to_clear_zone = rospy.get_param('/table_measurements/distance_to_clear_zone')
 
     # Create encoder publishers based on motor (Linear vs. Angular)
     if (motor % 2) == 1:
@@ -115,25 +128,28 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         
         # Updating variables with each iteration of the control loop with tools.control()
-        #   measurements: rad, meters, pos 
+        #   measurements: rad, meters, pos (calculated rad and meters tools.calculate())
         #   encoder values: left_encoder, encoder, right_encoder, encoder_flag
         #   motor type: linear, angular
 
-        rad, meters, pos,  \
+        pos, \
         left_encoder, encoder, right_encoder, encoder_flag, \
         angular, linear \
         = tools.control(
             motor, # motor id
             pos, i, pt, # step parameters
             SENSOR_R, SENSOR_L, SENSOR, encoder_flag, # encoder parameters
-            cmd_recieved, PUL_PIN # actuation parameters
+            cmd_recieved, PUL_PIN, # actuation parameters
         )
+        rad, meters = tools.calculate(motor, pos, steps_across_field, steps_per_revolution, distance_between_players, player_distance_from_wall, distance_to_clear_zone)
 
         # publishing measurements based on motor type
         if linear: 
-            pos_pub.publish(meters); left_enc_pub.publish(left_encoder); right_enc_pub.publish(right_encoder)
+            player_positions.data = meters
+            player_position_pub.publish(player_positions); left_enc_pub.publish(left_encoder); right_enc_pub.publish(right_encoder)
         if angular: 
-            pos_pub.publish(rad); enc_pub.publish(encoder)
+            player_positions.data = rad
+            player_position_pub.publish(player_positions); enc_pub.publish(encoder)
 
 
 print('Shutting down motor '+str(motor)+'.')
