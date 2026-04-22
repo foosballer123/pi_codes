@@ -2,6 +2,8 @@ import time
 import RPi.GPIO as GPIO
 import math
 
+OFFSET = (0, 0)
+
 def step(pin, pt, pos, i):
 
     """
@@ -160,7 +162,13 @@ def if_angular_step(motor, pos, i, pt, encoder_pin, encoder_flag, cmd_recieved, 
 
         if (encoder == 1) and (encoder_flag == 0):
             encoder_flag = 1
-            pos = 0
+            if OFFSET[0] != 0:
+                if pos > 0:
+                    pos = OFFSET[1]
+                elif pos < 0:
+                    pos = OFFSET[0] 
+            else:
+                pos = 0
         elif (encoder == 0) and (encoder_flag == 1):
             encoder_flag = 0
 
@@ -188,7 +196,7 @@ def control(motor, pos, i, pt, right_encoder_pin, left_encoder_pin, encoder_pin,
     angular \
     = if_angular_step(
         motor, 
-        pos, i, pt, 
+        pos, -i, pt, # Direction of angular controller is opposite linear controller for consitency with solver
         encoder_pin, encoder_flag, 
         cmd_recieved, pul_pin
     )
@@ -199,10 +207,17 @@ def control(motor, pos, i, pt, right_encoder_pin, left_encoder_pin, encoder_pin,
 
 def calculate(motor, pos, steps_across_field, steps_per_revolution, distance_between_players, player_distance_from_wall, distance_to_clear_zone):
 
-    rad, meters = 0, [0.0, 0.0, 0.0]
+    rad, meters = [0], [0.0, 0.0, 0.0]
     
-    if (motor % 2) == 0: # angular position
-        rad = pos*((2*math.pi)/steps_per_revolution)
+    if (motor % 2) == 0: # angular position 
+        if OFFSET[0] != 0:
+            if pos > 400:
+                pos = pos % 400
+            elif pos < -400:
+                pos = pos % -400 
+        
+        rad = [pos*((2*math.pi)/steps_per_revolution)]
+        #print(math.sin(rad[0]))
 
     elif (motor % 2) == 1: # linear positions
         base_player_position = round(pos * (distance_to_clear_zone / steps_across_field), 7)

@@ -11,13 +11,14 @@ import subprocess
 import signal
 import sys
 import argparse
+import rospy
 
 parser = argparse.ArgumentParser(
         description="'Spawn rod' script that initializes the linear and angular motors for a single rod starting from 'rod 1' through 'rod n'."
 )
 parser.add_argument("--rod", required=True, type=int)
 
-args = parser.parse_args()
+args = parser.parse_args(rospy.myargv()[1:])
 
 rod = args.rod
 

@@ -11,10 +11,10 @@ from libraries import tools # import libraries for step and direction/pw calcula
 import argparse
 
 parser = argparse.ArgumentParser(
-        description="Velocity control scripts that actuates motors based on recieved commands."
+    description="Velocity control scripts that actuates motors based on recieved commands."
 )
 parser.add_argument("--motor", required=True, type=int)
-args = parser.parse_args()
+args = parser.parse_args(rospy.myargv()[1:])
 
 motor = args.motor
 
@@ -48,19 +48,20 @@ def pos_callback(data):
     if cmd_recieved == False:
         cmd_recieved = True
 
-    # Read command signal based on motor number  
+    # Read command signal based on motor number
+    # Note: Direction of angular controllers are opposite of linear controllers for consistency with solver  
     if motor == 1:
         omega_d = data.linear.x
     elif motor == 2:
-        omega_d = data.angular.x
+        omega_d = -data.angular.x
     elif motor == 3:
         omega_d = data.linear.y
     elif motor == 4:
-        omega_d = data.angular.y
+        omega_d = -data.angular.y
     elif motor == 5:
         omega_d = data.linear.z
     elif motor == 6:
-        omega_d = data.angular.z
+        omega_d = -data.angular.z
 
     # calculating step commands based on incoming omega_d and setting global variables
     i, pt, cmd_recieved = tools.get_step(init, i, omega_d, DIR_PIN)
@@ -106,7 +107,6 @@ if __name__ == '__main__':
             left_encoder = GPIO.input(SENSOR_L)
         init = True 
         pos = 0
-
         print('Successfully initialized motor '+str(motor)+' to 0!')
 
     # Initialization for even motors (2 or 4 or 2n : angular motors)
@@ -115,9 +115,11 @@ if __name__ == '__main__':
         while not encoder:
             _ = tools.step(PUL_PIN, pt, pos, i)
             encoder = GPIO.input(SENSOR) 
+        pos = tools.OFFSET[0]
+        while pos != 0:
+            pos = tools.step(PUL_PIN, pt, pos, i)
         init = True
-        pos = 0
-
+        #print("Error: ", type(pos))
         print('Successfully initialized motor '+str(motor)+' to 0!')
 
     print('Starting control loop for motor '+str(motor)+'.')
@@ -132,6 +134,14 @@ if __name__ == '__main__':
         #   encoder values: left_encoder, encoder, right_encoder, encoder_flag
         #   motor type: linear, angular
 
+        # print("Motor Paramters:")
+        # print(
+        #     motor, # motor id
+        #     pos, i, pt, # step parameters
+        #     SENSOR_R, SENSOR_L, SENSOR, encoder_flag, # encoder parameters
+        #     cmd_recieved, PUL_PIN, # actuation parameters
+        # )
+
         pos, \
         left_encoder, encoder, right_encoder, encoder_flag, \
         angular, linear \
@@ -139,8 +149,12 @@ if __name__ == '__main__':
             motor, # motor id
             pos, i, pt, # step parameters
             SENSOR_R, SENSOR_L, SENSOR, encoder_flag, # encoder parameters
-            cmd_recieved, PUL_PIN, # actuation parameters
+            cmd_recieved, PUL_PIN # actuation parameters
         )
+
+        #print("Encoders:", left_encoder, right_encoder)
+        # if angular:
+        #     print("Error 2: ", pos, type(pos))
         rad, meters = tools.calculate(motor, pos, steps_across_field, steps_per_revolution, distance_between_players, player_distance_from_wall, distance_to_clear_zone)
 
         # publishing measurements based on motor type
