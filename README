@@ -1,15 +1,3 @@
-Create a README file that includes all instructions to run and necissary information about the file structure and codes
-
-How the sh codes are intended to run
-How launch files work
-Which files work with the 'old' and 'new' foobots
-
-Do the C++ codes offer any obvious benefits over the Python codes?
-What ros commands would someone need to be aware of to run python scripts or C codes from terminal? 
-How would someone build their own ros files if necissary?
-
-Also, go back through all of the codes and test which ones still work and add comments to the ones that do.
-
 For use with aftcode it is important to know that:
 - The motor scripts respond directly to the position of the ball passed through the /ball_pos topic
 - The only files that need to be run on the pi are the motor files found in the motor folder
@@ -34,3 +22,5 @@ Note: If you were to expand the number of motors on the table you would need to 
 is actuated by motors 1 and 2 where 1 is the linear direction and 2 is the angular; rod 2 would have motors 3, linear, and 4, angular, and so on.
 
 Note: C++ codes have very little benefit here. The timing delay problems caused by the python scripts can be fixed by a constant timing offset value. The files found in src can be largely ignored.
+
+Note: foobot.sh is important for establishing communication between the master and slave. If this file gets messed up they cannot find each other. It is configured to automatically run in bash.rc.
