@@ -9,3 +9,12 @@ What ros commands would someone need to be aware of to run python scripts or C c
 How would someone build their own ros files if necissary?
 
 Also, go back through all of the codes and test which ones still work and add comments to the ones that do.
+
+For use with aftcode it is important to know that:
+
+For use with aftcode2_0 it is import to know that:
+- Roscore needs to be running on the master
+- tools.py in scripts/libraries contains most of the stepper logic for the low level controllers
+- spawn_rod.py requires one argument --rod which for aftcode2_0 can only be either 1 or 2 and instantiates one instance of velocity_ctrl.py each for the angular and linear directions of the specified rod
+
+Note: If you were to expand the logic in spawn_rod.py or velocity_ctrl.py you would need to abide by the numbering scheme that both assume where the farthest left rod on the hardware side is actuated by motors 1 and 2 where 1 is the linear direction and 2 is the angular.
