@@ -23,3 +23,5 @@ For use with aftcode2_0 it is import to know that:
 
 Note: If you were to expand the number of motors on the table you would need to abide by the numbering scheme found in spawn_rod.py and velocity_ctrl.py that assume the farthest left rod on the hardware side
 is actuated by motors 1 and 2 where 1 is the linear direction and 2 is the angular; rod 2 would have motors 3, linear, and 4, angular, and so on.
+
+Note: C++ codes have very little benefit here. The timing delay problems caused by the python scripts can be fixed by a constant timing offset value. The files found in src can be largely ignored.
